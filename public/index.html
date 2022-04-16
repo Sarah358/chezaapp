@@ -30,15 +30,18 @@
     <div class="container">
       <div class="navbar">
         <img src="./images/logo.jpeg" alt="logo" class="logo">
+        <div id="userdetails"> 
+             
+        </div>
        
         <ul>
           <li><a href="index.html">Home</a></li>
-          <li><a href="#">Songs</a></li>
+          <li><a href="songs.html">Songs</a></li>
           <li><a href="#">Artists</a></li>
           <li><a href="#">Genres</a></li>
-          <li><a href="login.html">Login</a></li>
-          <li><a href="signup.html" id="SignUp">SignUp</a></li>
-          <li><a href="#">Logout</a></li>
+          <li><a href="login.html" id="login">Login</a></li>
+          <li><a href="signup.html" id="signup">SignUp</a></li>
+          <li><a href="#" id="logout">Logout</a></li>
          
 
         </ul>
@@ -65,6 +68,73 @@
     
     </audio>
 
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-analytics.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+    
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyBu1S5OTN3cQ1Bv85Zp6Eip6TL7YlByTDM",
+        authDomain: "chezaapp-a4bd0.firebaseapp.com",
+        projectId: "chezaapp-a4bd0",
+        storageBucket: "chezaapp-a4bd0.appspot.com",
+        messagingSenderId: "585308125489",
+        appId: "1:585308125489:web:7a3f3082fce08330cb5810",
+        measurementId: "G-YPQ9NSR8P5"
+      };
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const db = firebase.firestore()
+
+
+
   
+      document.getElementById('logout').style.display="none"
+      document.getElementById('logout').addEventListener('click',Logout)
+
+    
+  
+      function showUserData(user){
+        document.getElementById('userdetails').innerHTML = `
+        <img src="${user.photoURL}" style="width:20%;border-radius:50%">
+        <p>Name: ${user.displayName}</p>
+        <p>Email: ${user.email}</p>
+
+        `
+      }
+      function checkAuthState(){
+        firebase.auth().onAuthStateChanged(user=>{
+          if(user){    
+      document.getElementById('logout').style.display="block"
+      document.getElementById('login').style.display="none"
+      document.getElementById('signup').style.display="none"
+
+            showUserData(user)
+          }else{
+
+          }
+        })
+      }
+      function Logout(){
+        console.log('Logout clicked')
+        firebase.auth().signOut().then(()=>{
+       document.getElementById('logout').style.display="none"
+      document.getElementById('login').style.display="block"
+     document.getElementById('userdetails').style.display="none"
+      document.getElementById('signup').style.display="block"
+        }).catch(e=>{
+          console.log(e)
+        })
+      }
+  
+      checkAuthState()
+
+    </script>
   </body>
 </html>

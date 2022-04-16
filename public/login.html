@@ -44,7 +44,7 @@
 
         <ul>
           <li><a href="index.html">Home</a></li>
-          <li><a href="#">Songs</a></li>
+          <li><a href="songs.html">Songs</a></li>
           <li><a href="#">Artists</a></li>
           <li><a href="#">Genres</a></li>
           <li><a href="login.html" id="login">Login</a></li>
@@ -70,31 +70,41 @@
             <span class="fas fa-user"></span>
             <input id="email" type="text" placeholder="Email"  required>
           </div>
+          <br>
         
           <div class="field">
             <span class="fa fa-lock"></span>
             <input id="password" type="password" placeholder="Password">
           </div>
+          <br>
           <div class="field">
             <button class="btn" id="loginbtn"> Login</button>
           </div>
           
         </form>
-        <br>
-        <br>
+        
         <br>
         <div class="or" style="color: rgb(175, 22, 22);">OR</div>
+        <br>
+        <div class="field">
+          <button class="btn" id="facebooklogin" style="background-color: rgb(17, 17, 114); color: white;"> <i class="fa-brands fa-facebook"></i> |  Login With Facebook</button>
+        </div>
+        <br>
+        <div class="field">
+          <button class="btn" id="twitterlogin" style="background-color: rgb(21, 139, 218); color: white;"> <i class="fa-brands fa-twitter"></i> |  Login With Twitter</button>
+        </div>
+        <br>
+        <div class="field">
+          <button class="btn" id="googlelogin" style="background-color: rgb(238, 43, 17); color: white;"> <i class="fa-brands fa-google"></i> |  Login With Google</button>
+        </div>
+        <br>
+        <div class="field">
+          <button class="btn" id="anonymouslogin" style="background-color: rgb(189, 19, 146); color: white;"> Anonymous Login</button>
+        </div>
+         
 
        
-        <div class="icon-button"> 
-
-          <span class="facebook"><i class="fa-brands fa-facebook"></i>  Facebook</span>
-      
-          <span id="googlelogin" ><i class="fa-brands fa-google"></i>  Google</span>
-          <span id="twitterlogin" style="margin-left: 100px; " ><i class="fa-brands fa-twitter"></i>  Twitter</span>
-
-      
-       </div>
+       
  
     </div>
 
@@ -123,7 +133,11 @@
       const app = initializeApp(firebaseConfig);
       const analytics = getAnalytics(app);
 
+        // EVENT LISTENERS
       document.getElementById('googlelogin').addEventListener('click',GoogleLogin)
+      document.getElementById('facebooklogin').addEventListener('click',FacebookLogin)
+      document.getElementById('twitterlogin').addEventListener('click',TwitterLogin)
+      document.getElementById('anonymouslogin').addEventListener('click',AnonymousLogin)
       document.getElementById('logout').addEventListener('click',Logout)
       document.getElementById('loginbtn').addEventListener('click',Login)
       document.getElementById('logout').style.display="none"
@@ -131,36 +145,67 @@
 
       // const auth = firebase.auth();
       let provider = new firebase.auth.GoogleAuthProvider();
+      let facebookprovider = new firebase.auth.FacebookAuthProvider();
+      let twitterprovider = new firebase.auth.TwitterAuthProvider();
 
+      // EMAIL/PASSWORD LOGIN
       function Login(){
         console.log('login clicked')
         let email = document.getElementById('email').value
         let password =document.getElementById('password').value
 
         firebase.auth().signInWithEmailAndPassword(email,password).catch(e=>{
-          console.log(e)
+          alert(e)
         })
 
 
       }
+      // ANONYMOUS LOGIN
+      function AnonymousLogin(){
+        
+        firebase.auth().signInAnonymously()
+  .then(() => {
+    console.log('logged in anonymously')
+  })
+  .catch(e => {
+    alert(e)
+   
+  });
+      }
+      // TWITTER LOGIN
+      function TwitterLogin(){
+        console.log('twitter login clicked')
+        firebase.auth().signInWithPopup(twitterprovider).then(res=>{
+          console.log(res.user)
+          showUserData(res.user)
 
+        }).catch(e=>{
+          alert(e)
+        })
+        
+      }
+      // FACEBOOK LOGIN
+      function FacebookLogin(){
+        console.log('facebook login clicked')
+        firebase.auth().signInWithPopup(facebookprovider).then(res=>{
+          console.log(res.user)
+          showUserData(res.user)
+        }).catch(e=>{
+          alert(e)
+        })
+      }
+      // GOOGLE LOGIN
       function GoogleLogin(){
         console.log('Google login clicked')
         firebase.auth().signInWithPopup(provider).then(res=>{
           console.log(res.user)
           showUserData(res.user)
-      document.getElementById('logout').style.display="block"
-      document.getElementById('login').style.display="none"
-      document.getElementById('loginscreen').style.display="none"
-      document.getElementById('signup').style.display="none"
-
-
-
 
         }).catch(e=>{
-          console.log(e)
+          alert(e)
         })
       }
+      // SHOW USER DATA AFTER LOGIN
       function showUserData(user){
         document.getElementById('userdetails').innerHTML = `
         <img src="${user.photoURL}" style="width:20%;border-radius:50%">
@@ -169,9 +214,11 @@
 
         `
       }
+      // CHECK AUTH STATE
       function checkAuthState(){
         firebase.auth().onAuthStateChanged(user=>{
           if(user){
+            window.location = 'index.html';
             document.getElementById('logout').style.display="block"
       document.getElementById('login').style.display="none"
       document.getElementById('loginscreen').style.display="none"
@@ -183,6 +230,7 @@
           }
         })
       }
+      // LOGOUT
       function Logout(){
         console.log('Logout clicked')
         firebase.auth().signOut().then(()=>{
@@ -191,15 +239,11 @@
       document.getElementById('loginscreen').style.display="block"
       document.getElementById('userdetails').style.display="none"
       document.getElementById('signup').style.display="block"
-
-
-    
-
-
         }).catch(e=>{
-          console.log(e)
+          alert(e)
         })
       }
+      // CALLING AUTH STATE FUNCTION
       checkAuthState()
 
     </script>

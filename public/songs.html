@@ -3,17 +3,13 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>ChezaApp </title>
+    <title>ChezaApp</title>
     <!-- css  -->
     <link rel="stylesheet" href="style.css">
-    <!-- fontawesome -->
-      <!--font-awesome cdn link  -->
-   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
-   integrity="sha512-9usAa10IRO0HhonpyAIVpjrylPvoDwiPUiKdWk5t3PyolY1cOd4DSE0Ga+ri4AuTroPR5aQvXU9xC6qOPnzFeg==" 
-  crossorigin="anonymous" referrerpolicy="no-referrer" />
-
-  
     <!-- update the version number as needed -->
+     <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+
     <script defer src="/__/firebase/9.6.10/firebase-app-compat.js"></script>
     <!-- include only the Firebase features as you need -->
     <script defer src="/__/firebase/9.6.10/firebase-auth-compat.js"></script>
@@ -32,76 +28,93 @@
     <script defer src="/__/firebase/init.js?useEmulator=true"></script>
     <!-- js -->
     <script src="app.js" defer></script>
+    <style>
+      .container-fluid{
+        height: 100vh;
+        width: 100%;
+        background-image: url(./images/image.png);
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+    </style>
   </head>
   <body>
-    <div class="container">
+    <div class="container-fluid">
       <div class="navbar">
         <img src="./images/logo.jpeg" alt="logo" class="logo">
-        <!-- <button id="googlelogin">login</button> -->
+        <button  class="modal-trigger btn dark"  style="width: 200px;" data-target="modal-create" id="addsong">Add Song</button>
         <div id="userdetails"> 
              
         </div>
-
+       
         <ul>
           <li><a href="index.html">Home</a></li>
           <li><a href="songs.html">Songs</a></li>
           <li><a href="#">Artists</a></li>
           <li><a href="#">Genres</a></li>
           <li><a href="login.html" id="login">Login</a></li>
-          <li><a href="#" id="signup">SignUp</a></li>
+          <li><a href="signup.html" id="signup">SignUp</a></li>
           <li><a href="#" id="logout">Logout</a></li>
-
+         
 
         </ul>
-
+        
       </div>
       <div class="content">
         <div class="left-col">  
+
           <h1>THE <br> REAL <br> SOUND</h1>
             </div>
-            
-       
+            <div class="right-col"> 
+
+                <ul id="songs" style="list-style: none;">
+                    
+                </ul>
+                
+               
+                    
+                </div>
+                
+
+               
+        
 
       </div>
-      <div class="content2" id="loginscreen">
-        <div class="text">SignUp Form</div>
-        <form action="#">
-          <div class="field">
-            <span class="fas fa-user"></span>
-            <input id="email" type="text" placeholder="Email"  required>
+    
+     <!-- CREATE GUIDE MODAL -->
+     <div id="modal-create" class="modal">
+      <div class="modal-content">
+        <h4>Add Song </h4><br />
+        <form id="create-form">
+          <div class="input-field">
+            <input type="text" id="title" required>
+            <label for="title">Song Title</label>
           </div>
-          <br>
-        
-          <div class="field">
-            <span class="fa fa-lock"></span>
-            <input id="password" type="password" placeholder="Password">
+          <div class="input-field">
+            <input type="text" id="genre" required>
+            <label for="genre">Genre</label>
           </div>
-          <br>
-          <div class="field">
-            <button class="btn" id="signupbtn"> Sign Up</button>
+          <div class="input-field">
+            <input type="text" id="artist" required>
+            <label for="artist">Artist</label>
           </div>
-          
+          <div class="file-field input-field">
+            <div class="btn">
+              <span > Upload File</span>
+              <input type="file">
+            </div>
+            <div class="file-path-wrapper">
+              <input class="file-path validate" type="text">
+            </div>
+          </div>
+          <button class="btn indigo darken-4 z-depth-0">Add Song </button>
         </form>
-        
-        <br>
-        <div class="or" style="color: rgb(175, 22, 22);">OR</div>
-        <br>
-        <div class="field">
-          <button class="btn" id="facebooklogin" style="background-color: rgb(17, 17, 114); color: white;"> <i class="fa-brands fa-facebook"></i> |  SignUp With Facebook</button>
-        </div>
-        <br>
-        <div class="field">
-          <button class="btn" id="twitterlogin" style="background-color: rgb(21, 139, 218); color: white;"> <i class="fa-brands fa-twitter"></i> |  SignUp With Twitter</button>
-        </div>
-        <br>
-        <div class="field">
-          <button class="btn" id="googlelogin" style="background-color: rgb(238, 43, 17); color: white;"> <i class="fa-brands fa-google"></i> |  SignUp With Google</button>
-        </div>
-
-       
-       
- 
+      </div>
     </div>
+
+    </div>
+
 
     
 
@@ -127,65 +140,104 @@
       // Initialize Firebase
       const app = initializeApp(firebaseConfig);
       const analytics = getAnalytics(app);
+      const db = firebase.firestore()
 
-    //  EVENT LISTENERS
-      document.getElementById('signupbtn').addEventListener('click',Signup)
-      document.getElementById('logout').addEventListener('click',Logout)
-      document.getElementById('logout').style.display="none"
+      // setup materialize components
+document.addEventListener('DOMContentLoaded', function() {
 
-     
-    //  SIGN UP USING EMAIL/PASSWORD
-      function Signup(){
-        console.log('signup button clicked')
-        let email = document.getElementById('email').value
-        let password =document.getElementById('password').value
+var modals = document.querySelectorAll('.modal');
+M.Modal.init(modals);
 
-        firebase.auth().createUserWithEmailAndPassword(email,password).catch(e=>{
-          alert(e)
-        })
+var items = document.querySelectorAll('.collapsible');
+M.Collapsible.init(items);
+
+});
+
+ 
+
+    const songs = document.getElementById('songs')
+
+    const getsongs = (data) =>{
+      if(data.length){
+        let html = '';
+        data.forEach(doc => {
+            const song = doc.data()
+            const li = `
+            <li >
+                <div>artist: ${song.artist}</div>
+                <div>genre: ${song.genre}</div>
+                <div>name : ${song.name}</div>
+
+                </li>
+            `;
+            html += li
+        });
+        songs.innerHTML = html;
+
+      }else{
+        songs.innerHTML = '<h5>Login to view songs</h5>';
       }
+        
 
-    // SHOW USER DATA AFTER LOGIN
+    }
+
+
+
+    //   EVENT LISTENERS
+    document.getElementById('addsong').style.display="none"
+
+      document.getElementById('logout').style.display="none"
+      document.getElementById('logout').addEventListener('click',Logout)
+
+        // SHOW LOGGED IN USER DATA
       function showUserData(user){
         document.getElementById('userdetails').innerHTML = `
-       
-        <p>Welcome <br>   ${user.email}</p>
+        <img src="${user.photoURL}" style="width:20%;border-radius:50%">
+        <p>Name: ${user.displayName}</p>
+        <p>Email: ${user.email}</p>
+
         `
       }
-      // CHECKING AUTH STATE
+    //   CHECKING AUTH STATE
       function checkAuthState(){
         firebase.auth().onAuthStateChanged(user=>{
-          if(user){
-            window.location = 'index.html'
+          if(user){  
+    document.getElementById('addsong').style.display="block"
+
+               //   GET DATA 
+    db.collection('songs').get().then(snapshot=>{
+        getsongs(snapshot.docs)
+    })  
       document.getElementById('logout').style.display="block"
       document.getElementById('login').style.display="none"
-      document.getElementById('loginscreen').style.display="none"
       document.getElementById('signup').style.display="none"
 
             showUserData(user)
           }else{
+            getsongs([])
 
           }
         })
       }
-      // LOGOUT
+    //   LOGOUT 
       function Logout(){
         console.log('Logout clicked')
         firebase.auth().signOut().then(()=>{
        document.getElementById('logout').style.display="none"
       document.getElementById('login').style.display="block"
-      document.getElementById('loginscreen').style.display="block"
-      document.getElementById('userdetails').style.display="none"
+     document.getElementById('userdetails').style.display="none"
       document.getElementById('signup').style.display="block"
+    document.getElementById('addsong').style.display="none"
+
         }).catch(e=>{
-          alert(e)
+          console.log(e)
         })
       }
-      // CALLING AUTH STATE FUNCTION 
+    //   CALLING AUTH STATE FUNCTION
       checkAuthState()
 
     </script>
-
-   
+     <!-- Compiled and minified JavaScript -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
   </body>
 </html>

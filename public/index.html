@@ -6,6 +6,9 @@
     <title>ChezaApp</title>
     <!-- css  -->
     <link rel="stylesheet" href="style.css">
+     <!-- Compiled and minified CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <!-- update the version number as needed -->
     <script defer src="/__/firebase/9.6.10/firebase-app-compat.js"></script>
     <!-- include only the Firebase features as you need -->
@@ -25,17 +28,61 @@
     <script defer src="/__/firebase/init.js?useEmulator=true"></script>
     <!-- js -->
     <script src="app.js" defer></script>
+    <style>
+      .container-fluid{
+        height: 100vh;
+        width: 100%;
+        background-image: url(./images/image.png);
+        background-size: cover;
+        background-position: center;
+        position: relative;
+      }
+
+        /* Sample styling for comments and commenting controls */
+      #allcomments {
+          width: 600px;
+          margin: 1em 0 4em 1em;
+          /* margin-top: 200px; */
+          padding: 2%;
+          border: solid 1px gray;
+          border-radius: 10px;
+          box-shadow: 2px 2px 2px silver;
+          float: right;
+          
+
+
+      }
+
+        ul#pastcomments {
+            list-style-type: none;
+        }
+        form#newcomment textarea {
+            height: 72px;
+            padding: 2%;
+        }
+
+        form#newcomment label {
+            display: inline-block;
+            margin: 1em 0 0 0;
+        }
+
+        form#newcomment textarea,
+        form#newcomment input[type="text"] {
+            margin-top: 0;
+        }
+
+    </style>
   </head>
   <body>
-    <div class="container">
+    <div class="container-fluid">
       <div class="navbar">
         <img src="./images/logo.jpeg" alt="logo" class="logo">
         <div id="userdetails"> 
              
         </div>
        
-        <ul>
-          <li><a href="index.html">Home</a></li>
+        <ul class="collection">
+          <li><a href="index.html" class="collection-item active">Home</a></li>
           <li><a href="songs.html">Songs</a></li>
           <li><a href="#">Artists</a></li>
           <li><a href="#">Genres</a></li>
@@ -50,11 +97,32 @@
       <div class="content">
         <div class="left-col">  
           <h1>THE <br> REAL <br> SOUND</h1>
+
+        
             </div>
         <div class="right-col"> 
-        <p>Click here to listen</p>  
-        <img src="./images/play.png" alt="play" id="icon">
+        <!-- <p>Click here to listen</p>  
+        <img src="./images/play.png" alt="play" id="icon"> -->
+        <div id="allcomments">
+          <h3>Comments</h3>
+          <!-- We will show past comments in the list below-->
+          <ul id="pastcomments" class="collection"></ul>
+          <!-- This is the form for entering a new comment -->
+          <form id="newcomment">
+            <h5> <u> Add Comment</u></h5>
+              <label for="tbName">First Name or Initials</label>
+              <br>
+              <input id="tbName" type="text" maxlength="20" required>
+              <br>
+              <label for="txComment">Your Comment / Question</label>
+              <br>
+              <textarea id="txComment" maxlength="4096" required style="width:96%"></textarea>
+              <br>
+              <input type="submit" class="waves-effect waves-light btn-large" id="btnSubmitComment" value="Submit Comment">
+          </form>
+      </div>
         </div>
+        
 
       </div>
     
@@ -91,6 +159,64 @@
       const app = initializeApp(firebaseConfig);
       const analytics = getAnalytics(app);
       const db = firebase.firestore()
+
+      // get past comments
+    const pastcomments = document.getElementById('pastcomments')
+
+    const getcomments = (data) =>{
+      if(data.length){
+        let html = '';
+        data.forEach(doc => {
+            const comment = doc.data()
+            const li = `
+            <li class="collection-item ">
+              <i class="material-icons">message</i>
+              <p>${comment.comment} 
+                    </p>
+              <span class="title" >By: ${comment.name}</span> 
+
+                </li>
+                
+            `;
+            html += li
+       
+
+        });
+        pastcomments.innerHTML = html;
+      
+      
+
+      }else{
+        pastcomments.innerHTML = '';
+      }
+        
+
+    }
+   
+
+    //   GET DATA 
+    db.collection('comments').onSnapshot(snapshot=>{
+        getcomments(snapshot.docs)
+    })  
+
+
+
+      // create comment   
+     const createform = document.querySelector('#newcomment');
+      createform.addEventListener('submit', (e) => {
+        e.preventDefault();
+        db.collection('comments').add({
+          name:createform.tbName.value,
+          comment:createform.txComment.value,
+          
+        }).then(()=>{
+          // reset form       
+    createform.reset();       
+        }).catch(err => {
+          alert(err.message)
+        })
+
+      })
 
 
 

@@ -9,6 +9,7 @@
     <!-- update the version number as needed -->
      <!-- Compiled and minified CSS -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
     <script defer src="/__/firebase/9.6.10/firebase-app-compat.js"></script>
     <!-- include only the Firebase features as you need -->
@@ -48,9 +49,9 @@
              
         </div>
        
-        <ul>
+        <ul class="collection">
           <li><a href="index.html">Home</a></li>
-          <li><a href="songs.html">Songs</a></li>
+          <li><a href="songs.html" class="collection-item active">Songs</a></li>
           <li><a href="#">Artists</a></li>
           <li><a href="#">Genres</a></li>
           <li><a href="login.html" id="login">Login</a></li>
@@ -67,9 +68,9 @@
           <h1>THE <br> REAL <br> SOUND</h1>
             </div>
             <div class="right-col"> 
-
-                <ul id="songs" style="list-style: none;">
-                    
+   
+    <ul class="collection" id="songs" style="width: 600px;">              
+                 
                 </ul>
                 
                
@@ -88,8 +89,8 @@
         <h4>Add Song </h4><br />
         <form id="create-form">
           <div class="input-field">
-            <input type="text" id="title" required>
-            <label for="title">Song Title</label>
+            <input type="text" id="name" required>
+            <label for="name">Song Title</label>
           </div>
           <div class="input-field">
             <input type="text" id="genre" required>
@@ -99,16 +100,16 @@
             <input type="text" id="artist" required>
             <label for="artist">Artist</label>
           </div>
-          <div class="file-field input-field">
+          <div class="file-field input-field" >
             <div class="btn">
               <span > Upload File</span>
-              <input type="file">
+              <input type="file" id="fileupload">
             </div>
             <div class="file-path-wrapper">
               <input class="file-path validate" type="text">
             </div>
           </div>
-          <button class="btn indigo darken-4 z-depth-0">Add Song </button>
+          <button class="btn indigo darken-4 z-depth-0" type="submit">Add Song </button>
         </form>
       </div>
     </div>
@@ -141,6 +142,7 @@
       const app = initializeApp(firebaseConfig);
       const analytics = getAnalytics(app);
       const db = firebase.firestore()
+      // db.settings({timestampsInSnapshots: true})
 
       // setup materialize components
 document.addEventListener('DOMContentLoaded', function() {
@@ -163,16 +165,33 @@ M.Collapsible.init(items);
         data.forEach(doc => {
             const song = doc.data()
             const li = `
-            <li >
-                <div>artist: ${song.artist}</div>
-                <div>genre: ${song.genre}</div>
-                <div>name : ${song.name}</div>
-
+            <li class="collection-item avatar" style="cursor: pointer;" >
+              <i class="material-icons circle red">play_arrow</i>
+              <span class="title">${song.name}</span>
+              <p>${song.artist} <br>
+                ${song.genre}
+                    </p>
+                    <a href="#" class="secondary-content" id="cross"><i class="close material-icons">close</i></a>
                 </li>
             `;
             html += li
+       
+
         });
         songs.innerHTML = html;
+        const cross = document.querySelector('#cross');
+      
+      cross.addEventListener('click',(e) =>{
+    //   e.stopPropagation();
+    //   let id = e.target.parentElement.getAttribute('doc.data');
+    db.collection('songs').doc(id).delete().then(() =>{
+      console.log('delete clicked')
+
+    }).catch((err)=>{
+      console.error("Error removing document: ", error);
+    })    
+    })
+      
 
       }else{
         songs.innerHTML = '<h5>Login to view songs</h5>';
@@ -180,8 +199,7 @@ M.Collapsible.init(items);
         
 
     }
-
-
+   
 
     //   EVENT LISTENERS
     document.getElementById('addsong').style.display="none"
@@ -198,14 +216,23 @@ M.Collapsible.init(items);
 
         `
       }
+
+      // FILE UPLOAD
+      document.getElementById('fileupload').addEventListener('click',uploadfile)
+
+      function uploadfile(){
+        console.log('file upload')
+        // Create a root reference
+        var storageRef = firebase.storage().ref('/songs/');
+
+      }
     //   CHECKING AUTH STATE
       function checkAuthState(){
         firebase.auth().onAuthStateChanged(user=>{
           if(user){  
     document.getElementById('addsong').style.display="block"
-
                //   GET DATA 
-    db.collection('songs').get().then(snapshot=>{
+    db.collection('songs').onSnapshot(snapshot=>{
         getsongs(snapshot.docs)
     })  
       document.getElementById('logout').style.display="block"
@@ -219,6 +246,30 @@ M.Collapsible.init(items);
           }
         })
       }
+
+      // Add new song
+      const createform = document.querySelector('#create-form');
+      createform.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        db.collection('songs').add({
+          name:createform.name.value,
+          genre:createform.genre.value,
+          artist:createform.artist.value
+        }).then(()=>{
+          // close the modal and reset form
+          const modal = document.querySelector('#modal-create');
+    M.Modal.getInstance(modal).close();
+    createform.reset();       
+        }).catch(err => {
+          alert(err.message)
+        })
+
+      })
+     
+      
+     
+
     //   LOGOUT 
       function Logout(){
         console.log('Logout clicked')

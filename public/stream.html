@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ChezaApp</title>
+    <!-- css  -->
+    <!-- <link rel="stylesheet" href="style.css"> -->
+    <link rel="stylesheet" href="stream.css">
+    
+  
+    <!-- update the version number as needed -->
+    <script src="https://kit.fontawesome.com/44a29f837f.js" crossorigin="anonymous"></script>
+    <script defer src="/__/firebase/9.6.10/firebase-app-compat.js"></script>
+    <!-- include only the Firebase features as you need -->
+    <script defer src="/__/firebase/9.6.10/firebase-auth-compat.js"></script>
+    <script defer src="/__/firebase/9.6.10/firebase-database-compat.js"></script>
+    <script defer src="/__/firebase/9.6.10/firebase-firestore-compat.js"></script>
+    <script defer src="/__/firebase/9.6.10/firebase-functions-compat.js"></script>
+    <script defer src="/__/firebase/9.6.10/firebase-messaging-compat.js"></script>
+    <script defer src="/__/firebase/9.6.10/firebase-storage-compat.js"></script>
+    <script defer src="/__/firebase/9.6.10/firebase-analytics-compat.js"></script>
+    <script defer src="/__/firebase/9.6.10/firebase-remote-config-compat.js"></script>
+    <script defer src="/__/firebase/9.6.10/firebase-performance-compat.js"></script>
+    <!-- 
+      initialize the SDK after all desired features are loaded, set useEmulator to false
+      to avoid connecting the SDK to running emulators.
+    -->
+    <script defer src="/__/firebase/init.js?useEmulator=true"></script>
+    <!-- <script src="app.js" defer></script> -->
+  </head>
+  <body>
+    <div class="container-fluid">
+      <div class="navbar">
+        <!-- <img src="./images/logo.jpeg" alt="logo" class="logo"> --> 
+        <div id="userdetails"> 
+             
+        </div>
+       
+        <ul class="collection">
+          <li><a href="index.html" >Home</a></li>
+          <li><a href="songs.html">Songs</a></li>
+          <li><a href="stream.html" class="collection-item active">Stream</a></li>
+          
+          <li><a href="login.html" id="login">Login</a></li>
+          <li><a href="signup.html" id="signup">SignUp</a></li>
+          <li><a href="#" id="logout">Logout</a></li>
+         
+
+        </ul>
+
+      </div>
+
+      <audio
+      src="https://firebasestorage.googleapis.com/v0/b/chezaapp-a4bd0.appspot.com/o/calm%20down_rema%2FAudio?alt=media&token=07cc2694-197a-4a4d-83c7-6b01ac958300"
+      class="song"
+    ></audio>
+   
+
+   
+
+    <div class="player">
+      <div class="song-thumbnail"></div>
+      <div class="song-name">Calm Down</div>
+      <div class="artist-name">Rema</div>
+      <div class="controls">
+        <img src="./images/Vector 2.png" class="prev-button" />
+        <div class="play-button"></div>
+        <img src="./images/Vector 3.png" class="next-button" />
+        <input
+          type="range"
+          class="interactive-progress"
+          min="0"
+          max=""
+          value="0"
+          onchange='const progressBar = document.querySelector(".interactive-progress");
+    song.currentTime = progressBar.value;'
+        />
+      </div>
+      <div class="progress-line"></div>
+    </div>
+
+    <div class="songs">
+      <div class="songs-title">Songs</div>
+      <!-- <a href="songs.html"><img src="./images/Group 2.png" class="add-button" /></a> -->
+      <div class="container"></div>
+    </div>
+    <!-- <img src="./images/Group 9.png" class="wave-design" /> -->
+   
+    <script type="module">
+      // Import the functions you need from the SDKs you need
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-analytics.js";
+      import { getStorage, ref, listAll } from "https://www.gstatic.com/firebasejs/9.6.10/firebase-storage.js";
+      // TODO: Add SDKs for Firebase products that you want to use
+      // https://firebase.google.com/docs/web/setup#available-libraries
+    
+      // Your web app's Firebase configuration
+      // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+      const firebaseConfig = {
+        apiKey: "AIzaSyBu1S5OTN3cQ1Bv85Zp6Eip6TL7YlByTDM",
+        authDomain: "chezaapp-a4bd0.firebaseapp.com",
+        projectId: "chezaapp-a4bd0",
+        storageBucket: "chezaapp-a4bd0.appspot.com",
+        messagingSenderId: "585308125489",
+        appId: "1:585308125489:web:7a3f3082fce08330cb5810",
+        measurementId: "G-YPQ9NSR8P5"
+      };
+    
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+      const db = firebase.firestore()
+      const storage = getStorage();
+
+const song = document.querySelector(".song");
+let songSrcs = [],
+  songNumber = 0,
+  i = 0;
+
+  // pause and play music
+document.querySelector(".play-button").addEventListener("click", () => {
+  if (song.paused) {
+    document.querySelector(".play-button").style.background =
+      "url('./images/Group 10.png')";
+    document.querySelector(".play-button").style.backgroundSize = "110%";
+    song.play();
+  } else {
+    document.querySelector(".play-button").style.background =
+      "url('./images/Vector 1 (1).png')";
+    document.querySelector(".play-button").style.backgroundSize = "100%";
+    song.pause();
+  }
+});
+
+
+
+
+
+
+
+// // get songs 
+firebase
+  .database()
+  .ref("Musicfiles")
+  .on("child_added", (s) => {
+    // document.querySelector(".header").style.height = "80px";
+    console.log(s.val());
+    songSrcs.push(s.val());
+    document.querySelector(".container").innerHTML +=
+      "<div class='song-box' onclick = playThisSong(" +
+      i++ +
+      ")><img src='https://firebasestorage.googleapis.com/v0/b/chezaapp-a4bd0.appspot.com/o/" +
+      s.val() +
+      "%2FThumbnail?alt=media&token=a30028ab-b613-4486-92dc-5cd90e8022e1' class='song-thumbnail'><div class='artist-name'>" +
+      s.val().substring(s.val().indexOf("_") + 1) +
+      "</div><div class='song-name'>" +
+      s.val().substring(0, s.val().indexOf("_")) +
+      "</div><img src='./images/Vector 4.png' class='play-button'></div>";
+    
+    song.src =
+      "https://firebasestorage.googleapis.com/v0/b/chezaapp-a4bd0.appspot.com/o/" +
+      songSrcs[0] +
+      "%2FAudio?alt=media&token=49e444d7-7873-4671-8dde-73f22b5d91bf";
+    document.querySelector(".player .song-thumbnail").style.background =
+      "url('https://firebasestorage.googleapis.com/v0/b/chezaapp-a4bd0.appspot.com/o/" +
+      songSrcs[0] +
+      "%2FThumbnail?alt=media&token=a30028ab-b613-4486-92dc-5cd90e8022e1')";
+    document.querySelector(".player .song-thumbnail").style.backgroundSize =
+      "100%";
+    document.querySelector(
+      ".player .song-name"
+    ).textContent = songSrcs[0].substring(0, songSrcs[0].indexOf("_"));
+    document.querySelector(
+      ".player .artist-name"
+    ).textContent = songSrcs[0].substring(songSrcs[0].indexOf("_") + 1);
+  });
+
+  function playThisSong(index) {
+  songNumber = index;
+  song.src =
+    "https://firebasestorage.googleapis.com/v0/b/chezaapp-a4bd0.appspot.com/o/" +
+    songSrcs[index] +
+    "%2FAudio?alt=media&token=49e444d7-7873-4671-8dde-73f22b5d91bf";
+  document.querySelector(".play-button").style.background =
+    "url('./images/Group 10.png')";
+  document.querySelector(".play-button").style.backgroundSize = "110%";
+  song.play();
+  document.querySelector(".player .song-thumbnail").style.background =
+    "url('https://firebasestorage.googleapis.com/v0/b/chezaapp-a4bd0.appspot.com/o/" +
+    songSrcs[index] +
+    "%2FThumbnail?alt=media&token=a30028ab-b613-4486-92dc-5cd90e8022e1')";
+  document.querySelector(".player .song-thumbnail").style.backgroundSize =
+    "100%";
+  document.querySelector(".player .song-name").textContent = songSrcs[
+    index
+  ].substring(0, songSrcs[index].indexOf("_"));
+  document.querySelector(".player .artist-name").textContent = songSrcs[
+    index
+  ].substring(songSrcs[index].indexOf("_") + 1);
+}
+document.querySelector(".prev-button").addEventListener("click", () => {
+  songNumber--;
+  if (songNumber < 0) {
+    songNumber = songSrcs.length - 1;
+  }
+  document.querySelector(".play-button").style.background =
+    "url('./images/Vector 1 (1).png')";
+  document.querySelector(".play-button").style.backgroundSize = "100%";
+  playThisSong(songNumber);
+});
+document.querySelector(".next-button").addEventListener("click", () => {
+  songNumber++;
+  if (songNumber >= songSrcs.length) {
+    songNumber = 0;
+  }
+  document.querySelector(".play-button").style.background =
+    "url('./images/Vector 1 (1).png')";
+  document.querySelector(".play-button").style.backgroundSize = "100%";
+  playThisSong(songNumber);
+});
+
+
+var duration = song.duration;
+function updateMusicProgressValue() {
+  const progressBar = document.querySelector(".interactive-progress");
+  progressBar.max = song.duration;
+  progressBar.value = song.currentTime;
+}
+setInterval(updateMusicProgressValue, 700);
+window.onload = function () {};
+
+
+
+      </script>
+    <!-- <script src="app.js"></script> -->
+  </body>
+</html>

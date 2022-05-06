@@ -52,8 +52,8 @@
         <ul class="collection">
           <li><a href="index.html">Home</a></li>
           <li><a href="songs.html" class="collection-item active">Songs</a></li>
-          <li><a href="#">Artists</a></li>
-          <li><a href="#">Genres</a></li>
+          <li><a href="stream.html">Stream</a></li>
+          
           <li><a href="login.html" id="login">Login</a></li>
           <li><a href="signup.html" id="signup">SignUp</a></li>
           <li><a href="#" id="logout">Logout</a></li>
@@ -83,33 +83,62 @@
 
       </div>
     
-     <!-- CREATE GUIDE MODAL -->
+     <!-- add song MODAL -->
      <div id="modal-create" class="modal">
       <div class="modal-content">
         <h4>Add Song </h4><br />
         <form id="create-form">
           <div class="input-field">
-            <input type="text" id="name" required>
-            <label for="name">Song Title</label>
+            <input type="text"class="uploadSongName" />
+            <label for="name">Song Name</label>
           </div>
+ 
           <div class="input-field">
-            <input type="text" id="genre" required>
-            <label for="genre">Genre</label>
-          </div>
-          <div class="input-field">
-            <input type="text" id="artist" required>
+            <input type="text"  class="uploadArtistName" />
             <label for="artist">Artist</label>
           </div>
           <div class="file-field input-field" >
-            <div class="btn">
-              <span > Upload File</span>
-              <input type="file" id="fileupload">
+            <div class="btn teal lighten-2">
+              <span > Upload Thumbnail</span>
+              <input type="file" class="uploadThumbnail">
             </div>
             <div class="file-path-wrapper">
               <input class="file-path validate" type="text">
             </div>
+            
+            <progress
+            value="0"
+            min="0"
+            max="100"
+            class="uploadProgress"
+              id="thumbnailUpload"
+          >
+            Thumbnail Upload Progress</progress
+          >
+           
           </div>
-          <button class="btn indigo darken-4 z-depth-0" type="submit">Add Song </button>
+          <div class="file-field input-field" >
+            <div class="btn #009688 teal darken-4">
+              <span > Upload Audio</span>
+              <input type="file" class="uploadMusic">
+            </div>
+            <div class="file-path-wrapper">
+              <input class="file-path validate" type="text">
+            </div>
+            
+            <progress
+            value="0"
+            min="0"
+            max="100"
+            class="uploadProgress"
+            id="audioUpload"
+          >
+            Audio Upload Progress</progress
+          >
+           
+          </div>
+          <button class="btn indigo darken-4 z-depth-0" id="clearform">Clear Form </button>
+        
         </form>
       </div>
     </div>
@@ -155,51 +184,11 @@ M.Collapsible.init(items);
 
 });
 
+
+
  
 
-    const songs = document.getElementById('songs')
-
-    const getsongs = (data) =>{
-      if(data.length){
-        let html = '';
-        data.forEach(doc => {
-            const song = doc.data()
-            const li = `
-            <li class="collection-item avatar" style="cursor: pointer;" >
-              <i class="material-icons circle red">play_arrow</i>
-              <span class="title">${song.name}</span>
-              <p>${song.artist} <br>
-                ${song.genre}
-                    </p>
-                    <a href="#" class="secondary-content" id="cross"><i class="close material-icons">close</i></a>
-                </li>
-            `;
-            html += li
-       
-
-        });
-        songs.innerHTML = html;
-        const cross = document.querySelector('#cross');
-      
-      cross.addEventListener('click',(e) =>{
-    //   e.stopPropagation();
-    //   let id = e.target.parentElement.getAttribute('doc.data');
-    db.collection('songs').doc(id).delete().then(() =>{
-      console.log('delete clicked')
-
-    }).catch((err)=>{
-      console.error("Error removing document: ", error);
-    })    
-    })
-      
-
-      }else{
-        songs.innerHTML = '<h5>Login to view songs</h5>';
-      }
-        
-
-    }
-   
+  
 
     //   EVENT LISTENERS
     document.getElementById('addsong').style.display="none"
@@ -217,55 +206,88 @@ M.Collapsible.init(items);
         `
       }
 
-      // FILE UPLOAD
-      document.getElementById('fileupload').addEventListener('click',uploadfile)
-
-      function uploadfile(){
-        console.log('file upload')
-        // Create a root reference
-        var storageRef = firebase.storage().ref('/songs/');
-
-      }
+      
     //   CHECKING AUTH STATE
       function checkAuthState(){
         firebase.auth().onAuthStateChanged(user=>{
           if(user){  
     document.getElementById('addsong').style.display="block"
                //   GET DATA 
-    db.collection('songs').onSnapshot(snapshot=>{
-        getsongs(snapshot.docs)
-    })  
+    // db.collection('songs').onSnapshot(snapshot=>{
+    //     getsongs(snapshot.docs)
+    // })  
       document.getElementById('logout').style.display="block"
       document.getElementById('login').style.display="none"
       document.getElementById('signup').style.display="none"
 
             showUserData(user)
           }else{
-            getsongs([])
+            songs.innerHTML = '<h5>Login to add songs</h5>';
+           
 
           }
         })
       }
+      // upoad thumnail
+      document
+  .querySelector(".uploadThumbnail")
+  .addEventListener("change", function (e) {
+    console.log(e);
+    var audio = e.target.files[0];
+    var databaseRef = firebase.database().ref();
+    var storageRef = firebase
+      .storage()
+      .ref(
+        document.querySelector(".uploadSongName").value +
+          "_" +
+          document.querySelector(".uploadArtistName").value +
+          "/Thumbnail"
+      );
+    var task = storageRef.put(audio);
+    task.on("state_changed", function progress(snapshot) {
+      console.log((snapshot.bytesTransferred / audio.size) * 100 + "%");
+      document.querySelector("#thumbnailUpload").value =
+        (snapshot.bytesTransferred / audio.size) * 100;
+    });
+  });
+
 
       // Add new song
-      const createform = document.querySelector('#create-form');
-      createform.addEventListener('submit', (e) => {
-        e.preventDefault();
-        
-        db.collection('songs').add({
-          name:createform.name.value,
-          genre:createform.genre.value,
-          artist:createform.artist.value
-        }).then(()=>{
-          // close the modal and reset form
-          const modal = document.querySelector('#modal-create');
-    M.Modal.getInstance(modal).close();
-    createform.reset();       
-        }).catch(err => {
-          alert(err.message)
-        })
+   document.querySelector(".uploadMusic").addEventListener("change", function (e) {
+  console.log(e);
+  var audio = e.target.files[0];
+  var databaseRef = firebase.database().ref();
+  var storageRef = firebase
+    .storage()
+    .ref(
+      document.querySelector(".uploadSongName").value +
+        "_" +
+        document.querySelector(".uploadArtistName").value +
+        "/Audio"
+    );
+  var task = storageRef.put(audio);
+  databaseRef
+    .child("Musicfiles")
+    .push(
+      document.querySelector(".uploadSongName").value +
+        "_" +
+        document.querySelector(".uploadArtistName").value
+    );
+  task.on("state_changed", function progress(snapshot) {
+    console.log((snapshot.bytesTransferred / audio.size) * 100 + "%");
+    document.querySelector("#audioUpload").value =
+      (snapshot.bytesTransferred / audio.size) * 100;
+  });
+});
 
-      })
+  // clear form nd close modal
+  document.getElementById('clearform').addEventListener('click',function(e){
+    console.log('close')
+    const modal = document.querySelector('#modal-create');
+    M.Modal.getInstance(modal).close();
+    createform.reset();
+
+  });
      
       
      
